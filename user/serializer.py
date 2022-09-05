@@ -1,11 +1,4 @@
 from rest_framework import serializers
-from rest_framework.permissions import IsAuthenticated
-from django.db import models
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenVerifySerializer
-
 from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -34,11 +27,23 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-# User serializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = '__all__'
+        fields = ['id', 'email', 'username']
+        # id
+        # password
+        # last_login
+        # phone_number
+        # email
+        # username
+        # firstname
+        # lastname
+        # is_active
+        # is_superuser
+        # is_staff
+        # groups
+        # user_permissions
 
 # class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 #     @classmethod
