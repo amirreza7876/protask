@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions, mixins, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import Token
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
@@ -17,6 +18,7 @@ def get_tokens_for_user(user):
 
 class RegisterApi(generics.GenericAPIView):
     serializer_class = RegisterSerializer
+    permission_classes = [AllowAny,]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

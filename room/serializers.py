@@ -16,7 +16,7 @@ class RoomSerializer(serializers.ModelSerializer):
         try:
             return obj.leader == self.context['request'].user
         except KeyError:
-            pass
+            return False
 
 
 class JoinRequestSerializer(serializers.ModelSerializer):
