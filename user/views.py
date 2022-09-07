@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions, mixins, status
-from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import Token
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
@@ -18,7 +19,7 @@ def get_tokens_for_user(user):
 
 class RegisterApi(generics.GenericAPIView):
     serializer_class = RegisterSerializer
-    permission_classes = [AllowAny,]
+    permission_classes = [AllowAny, ]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -30,6 +31,12 @@ class RegisterApi(generics.GenericAPIView):
             **token,
             "user": user_serializer.data,
         }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_detail(request):
+    return Response({"username": request.user.username})
 
 # class MyTokenObtainPairView(TokenObtainPairView):
 #     serializer_class = MyTokenObtainPairSerializer
