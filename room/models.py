@@ -24,3 +24,16 @@ class JoinRequest(models.Model):
 
     class Meta:
         ordering = ['-id']
+
+
+class InviteRequest(models.Model):
+    from_room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='room_invitation')
+    accepted = models.BooleanField(default=False)
+    status = models.CharField(max_length=1, choices=REQUEST_STATUS, default='p')
+    for_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_invitation')
+
+    def __str__(self):
+        return f'from {self.from_room} to {self.for_user}'
+
+    class Meta:
+        ordering = ['-id']
