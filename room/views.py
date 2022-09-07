@@ -82,23 +82,36 @@ def user_invitation(request):
         room = get_object_or_404(Room, request_string=request_string)
         room_members = room.members.all()
 
-        if user not in room_members:
-            return Response({'error': "not member"}, status=status.HTTP_403_FORBIDDEN)
-
         # is_valid() returns True if format of username_or_email matches with email
         is_email = is_valid(username_or_email)
         target_user = get_object_or_404(CustomUser, email=username_or_email) if is_email else \
             get_object_or_404(CustomUser, username=username_or_email)
 
-        if target_user in room_members:
-            return Response({'error': "already member"}, status=status.HTTP_400_BAD_REQUEST)
+        invite_object = InviteRequest.objects.get_or_create(for_user=target_user, from_room=room)
+        invite_object_model = invite_object[0]
+        invite_status = invite_object_model.status
+        invite_already_exist = invite_object[1]
+        if target_user not in room_members:
+            if not invite_already_exist and invite_status == 'r':
+                invite_object_model.status = 'p'
+                invite_object_model.save()
+                return Response({"msg": "request sent"}, status=status.HTTP_201_CREATED)
+            if invite_already_exist:
+                return Response({"msg": "request sent"}, status=status.HTTP_201_CREATED)
+            return Response({'msg': 'already invited user'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': "already member"}, status=status.HTTP_403_FORBIDDEN)
 
-        InviteRequest.objects.create(from_room=room, for_user=target_user)
-        return Response({'data': 'invitation sent'}, status=status.HTTP_201_CREATED)
+        #
+        # if target_user in room_members:
+        #     return Response({'error': "already member"}, status=status.HTTP_400_BAD_REQUEST)
+        #
+        # InviteRequest.objects.create(from_room=room, for_user=target_user)
+        # return Response({'data': 'invitation sent'}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET'])
-def room_request(request, room_id, request_string):
+@permission_classes([IsAuthenticated])
+def room_request_list(request, room_id, request_string):
     room = get_object_or_404(Room, request_string=request_string, id=room_id)
     room_members = room.members.all()
     user = request.user
@@ -110,7 +123,22 @@ def room_request(request, room_id, request_string):
         return Response({"msg": "error"}, status=status.HTTP_403_FORBIDDEN)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def room_invite_list(request, room_id, request_string):
+    room = get_object_or_404(Room, request_string=request_string, id=room_id)
+    room_members = room.members.all()
+    user = request.user
+    if user in room_members:
+        room_requests = InviteRequest.objects.filter(from_room=room)
+        serializer = InviteRequestSerializer(room_requests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    else:
+        return Response({"msg": "error"}, status=status.HTTP_403_FORBIDDEN)
+
+
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def change_request_status(request):
     request_is_accepted = request.data['accepted']
     for_room = request.data['forRoom']
@@ -141,6 +169,33 @@ def change_request_status(request):
         request_object.accepted = False
         request_object.status = 'r'
         request_object.save()
+        return Response({"msg": 'rejected'}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_invite_status(request):
+    invite_is_accepted = request.data['accepted']
+    request_string = request.data['fromRoom']
+    for_user = request.data['forUser']
+    email = for_user['email']
+    username = for_user['username']
+    invite_id = request.data['inviteId']
+    room = get_object_or_404(Room, request_string=request_string)
+    user = get_object_or_404(CustomUser, username=username, email=email)
+
+    if invite_is_accepted:
+        room.members.add(user)
+        invite_object = InviteRequest.objects.get(id=invite_id, from_room=room)
+        invite_object.accepted = True
+        invite_object.status = 'a'
+        invite_object.save()
+        return Response({"msg": 'accepted'}, status=status.HTTP_200_OK)
+    else:
+        invite_object = InviteRequest.objects.get(id=invite_id, from_room=room)
+        invite_object.accepted = False
+        invite_object.status = 'r'
+        invite_object.save()
         return Response({"msg": 'rejected'}, status=status.HTTP_200_OK)
 
 
