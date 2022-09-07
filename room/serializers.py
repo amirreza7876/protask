@@ -44,7 +44,7 @@ class JoinRequestSerializer(serializers.ModelSerializer):
 
 class InviteRequestSerializer(serializers.ModelSerializer):
     for_user = UserSerializer()
-    from_room = RoomSerializer(fields=('name', 'id'))
+    from_room = RoomSerializer(fields=('name', 'id', 'request_string'))
 
     class Meta:
         model = InviteRequest
