@@ -13,6 +13,7 @@ class RoomSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_is_owner(self, obj):
+        print(self.context, 'look here')
         try:
             return obj.leader == self.context['request'].user
         except KeyError:
