@@ -76,6 +76,7 @@ def user_invitation(request):
         serializer = InviteRequestSerializer(data=invites, many=True)
         serializer.is_valid()
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
     if request.method == 'POST':
         request_string = request.data['requestString']
         username_or_email = request.data['usernameOrEmail']
@@ -87,11 +88,11 @@ def user_invitation(request):
         target_user = get_object_or_404(CustomUser, email=username_or_email) if is_email else \
             get_object_or_404(CustomUser, username=username_or_email)
 
-        invite_object = InviteRequest.objects.get_or_create(for_user=target_user, from_room=room)
-        invite_object_model = invite_object[0]
-        invite_status = invite_object_model.status
-        invite_already_exist = invite_object[1]
         if target_user not in room_members:
+            invite_object = InviteRequest.objects.get_or_create(for_user=target_user, from_room=room)
+            invite_object_model = invite_object[0]
+            invite_status = invite_object_model.status
+            invite_already_exist = invite_object[1]
             if not invite_already_exist and invite_status == 'r':
                 invite_object_model.status = 'p'
                 invite_object_model.save()
