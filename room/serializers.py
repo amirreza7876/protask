@@ -7,7 +7,6 @@ class RoomSerializer(serializers.ModelSerializer):
     members = UserSerializer(many=True)
     leader = UserSerializer()
     is_owner = serializers.SerializerMethodField()
-
     def __init__(self, *args, **kwargs):
         # Don't pass the 'fields' arg up to the superclass
         fields = kwargs.pop('fields', None)
@@ -31,6 +30,7 @@ class RoomSerializer(serializers.ModelSerializer):
             return obj.leader == self.context['request'].user
         except KeyError:
             return False
+
 
 
 class JoinRequestSerializer(serializers.ModelSerializer):
