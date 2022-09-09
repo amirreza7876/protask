@@ -6,7 +6,7 @@ from room.models import Room
 
 class Task(models.Model):
     owner = models.ForeignKey(Room, on_delete=models.CASCADE, null=True, related_name='room_tasks')
-    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='user_tasks')
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='user_tasks')
     title = models.CharField(max_length=250)
     done = models.BooleanField(default=False)
     difficulty = models.CharField(max_length=2, choices=TASK_DIFFICULTY)
