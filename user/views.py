@@ -1,9 +1,8 @@
-from rest_framework import generics, permissions, mixins, status
+from django.db.utils import IntegrityError
+from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import Token
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
 from .serializer import RegisterSerializer, UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -33,17 +32,32 @@ class RegisterApi(generics.GenericAPIView):
         }, status=status.HTTP_201_CREATED)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def user_detail(request):
-    return Response({"username": request.user.username})
+    if request.method == 'GET':
+        return Response({"username": request.user.username, 'email': request.user.email, 'bio': request.user.bio})
 
-# class MyTokenObtainPairView(TokenObtainPairView):
-#     serializer_class = MyTokenObtainPairSerializer
-
-# class MyTokenVerifyView(TokenVerifyView):
-#     serializer_class = MyTokenVerifySerializer
-#     def get_serializer_context(self):
-#         context = super(MyTokenVerifyView, self).get_serializer_context()
-#         context.update({"request": self.request})
-#         return context
+    if request.method == 'POST':
+        print(request.data)
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        bio = request.data.get('bio')
+        user = request.user
+        try:
+            if email:
+                user.email = email
+                user.save()
+            if username:
+                user.username = username
+                user.save()
+            if password:
+                user.set_password(password)
+                user.save()
+            if bio:
+                user.bio = bio
+                user.save()
+        except IntegrityError as error:
+            return Response({'field error': "error.args[0].split('.')[1]"})
+        return Response({'msg': 'updated'}, status=status.HTTP_202_ACCEPTED)
