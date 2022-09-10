@@ -19,7 +19,6 @@ class RoomTaskViewSet(ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
-    # queryset = Task.objects.all()
     def get_queryset(self):
         request_string = self.request.query_params['requestString']
         room_id = self.request.query_params['roomId']

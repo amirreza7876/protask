@@ -52,12 +52,13 @@ def user_detail(request):
             if username:
                 user.username = username
                 user.save()
-            if password:
-                user.set_password(password)
-                user.save()
-            if bio:
-                user.bio = bio
-                user.save()
         except IntegrityError as error:
-            return Response({'field error': "error.args[0].split('.')[1]"})
+            return Response({'field error': error.args[0].split('.')[1]})
+
+        if password:
+            user.set_password(password)
+            user.save()
+        if bio:
+            user.bio = bio
+            user.save()
         return Response({'msg': 'updated'}, status=status.HTTP_202_ACCEPTED)
