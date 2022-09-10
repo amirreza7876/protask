@@ -1,15 +1,15 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from room.serializers import RoomSerializer, JoinRequestSerializer, InviteRequestSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from room.utils.is_valid_email import is_valid
 from user.serializer import UserSerializer
 from room.models import JoinRequest, Room, InviteRequest
-from room.permissions import IsMember
+from room.permissions import IsMember, IsOwner
 from user.models import CustomUser
-from rest_framework import status
+from rest_framework import status, generics
 
 
 class RoomListApi(ListAPIView):
@@ -76,7 +76,7 @@ def user_invitation(request):
         serializer = InviteRequestSerializer(data=invites, many=True)
         serializer.is_valid()
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     if request.method == 'POST':
         request_string = request.data['requestString']
         username_or_email = request.data['usernameOrEmail']
@@ -213,3 +213,15 @@ def create_room(request):
 
     if request.method == 'PATCH':
         pass
+
+
+class UpdateName(generics.UpdateAPIView):
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+    permission_classes = (IsOwner,)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.name = request.data.get("name")
+        instance.save()
+        return Response({'msg': 'updated'})
