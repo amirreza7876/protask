@@ -1,13 +1,10 @@
 from django.urls import path
-from rest_framework.routers import DefaultRouter
 from .views import RoomListApi, user_request, room_request_list, change_request_status, RoomDetailApi, create_room, \
-    user_invitation, change_invite_status, room_invite_list
+    user_invitation, change_invite_status, room_invite_list, UpdateName
 
-# router = DefaultRouter()
-# router.register('mine', RoomViewSet, basename='rooms')
-# urlpatterns = router.urls
 
 urlpatterns = [
+    path('edit-name/<int:pk>', UpdateName.as_view(), name='update-room-name'),
     path('mine/', RoomListApi.as_view(), name='my-rooms'),
     path('mine/<int:pk>/', RoomDetailApi.as_view(), name='my-rooms'),
     path('join-requests/', user_request, name='user-request'),
@@ -16,6 +13,5 @@ urlpatterns = [
     path('room-invites/<int:room_id>/<str:request_string>/', room_invite_list, name='room-request'),
     path('request/', change_request_status, name='change-request-status'),
     path('invite/', change_invite_status, name='change-invite-status'),
-    path('create/', create_room, name='create-room')
-
+    path('create/', create_room, name='create-room'),
 ]
