@@ -1,9 +1,11 @@
 from django.db import models
 from room.constants import REQUEST_STATUS
 from user.models import CustomUser
+import uuid
 
 
 class Room(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=250)
     leader = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='rooms_own', null=True)
     members = models.ManyToManyField(CustomUser, related_name='user_rooms', blank=True)
