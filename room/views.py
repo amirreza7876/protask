@@ -1,15 +1,28 @@
-from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
-from room.serializers import RoomSerializer, JoinRequestSerializer, InviteRequestSerializer
+from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
+from rest_framework import status
 
-from room.utils.is_valid_email import is_valid
-from user.serializer import UserSerializer
 from room.models import JoinRequest, Room, InviteRequest
+from room.serializers import RoomSerializer, JoinRequestSerializer, InviteRequestSerializer
+from room.utils.is_valid_email import is_valid
 from room.permissions import IsMember, IsOwner
+from user.serializer import UserSerializer
 from user.models import CustomUser
-from rest_framework import status, generics
+
+
+class UpdateName(UpdateAPIView):
+    lookup_field = 'id'
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+    permission_classes = (IsOwner,)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.name = request.data.get("name")
+        instance.save()
+        return Response({'msg': 'updated'})
 
 
 class RoomListApi(ListAPIView):
@@ -26,6 +39,7 @@ class RoomListApi(ListAPIView):
 
 
 class RoomDetailApi(RetrieveAPIView):
+    lookup_field = 'id'
     serializer_class = RoomSerializer
     permission_classes = [IsAuthenticated, IsMember]
     queryset = Room.objects.all()
@@ -34,6 +48,36 @@ class RoomDetailApi(RetrieveAPIView):
         context = super(RoomDetailApi, self).get_serializer_context()
         context.update({"request": self.request})
         return context
+
+
+class RemoveUserFromBoard(UpdateAPIView):
+    lookup_field = 'id'
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+    permission_classes = (IsOwner,)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        username = request.data.get('username')
+        user = CustomUser.objects.get(username=username)
+        if instance.leader == user:
+            return Response({"msg": "error"}, status=status.HTTP_400_BAD_REQUEST)
+        instance.members.remove(user)
+        serializer = self.serializer_class(instance)
+        return Response(serializer.data)
+
+
+class LeaveBoard(UpdateAPIView):
+    lookup_field = 'id'
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        instance.members.remove(user)
+        return Response({'msg': "left successfully"})
 
 
 @api_view(['GET', 'POST'])
@@ -112,8 +156,9 @@ def user_invitation(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def room_request_list(request, room_id, request_string):
-    room = get_object_or_404(Room, request_string=request_string, id=room_id)
+def room_request_list(request, uuid):
+    print('helloooo')
+    room = get_object_or_404(Room, id=uuid)
     room_members = room.members.all()
     user = request.user
     if user in room_members:
@@ -126,8 +171,8 @@ def room_request_list(request, room_id, request_string):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def room_invite_list(request, room_id, request_string):
-    room = get_object_or_404(Room, request_string=request_string, id=room_id)
+def room_invite_list(request, uuid):
+    room = get_object_or_404(Room, id=uuid)
     room_members = room.members.all()
     user = request.user
     if user in room_members:
@@ -176,13 +221,13 @@ def change_request_status(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_invite_status(request):
-    invite_is_accepted = request.data['accepted']
-    request_string = request.data['fromRoom']
-    for_user = request.data['forUser']
+    invite_is_accepted = request.data.get('accepted')
+    room_uuid = request.data.get('uuid')
+    for_user = request.data.get('forUser')
+    invite_id = request.data.get('inviteId')
     email = for_user['email']
     username = for_user['username']
-    invite_id = request.data['inviteId']
-    room = get_object_or_404(Room, request_string=request_string)
+    room = get_object_or_404(Room, id=room_uuid)
     user = get_object_or_404(CustomUser, username=username, email=email)
 
     if invite_is_accepted:
@@ -203,7 +248,7 @@ def change_invite_status(request):
 @api_view(['POST', 'PATCH'])
 def create_room(request):
     if request.method == 'POST':
-        room_name = request.data['name']
+        room_name = request.data.get('name')
         room_leader = request.user
         room = Room(name=room_name, leader=room_leader)
         room.save()
@@ -213,15 +258,3 @@ def create_room(request):
 
     if request.method == 'PATCH':
         pass
-
-
-class UpdateName(generics.UpdateAPIView):
-    queryset = Room.objects.all()
-    serializer_class = RoomSerializer
-    permission_classes = (IsOwner,)
-
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.name = request.data.get("name")
-        instance.save()
-        return Response({'msg': 'updated'})
