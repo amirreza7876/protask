@@ -10,6 +10,7 @@ class Task(models.Model):
     title = models.CharField(max_length=250)
     done = models.BooleanField(default=False)
     difficulty = models.CharField(max_length=2, choices=TASK_DIFFICULTY)
+    duration = models.IntegerField(default=0)
     status = models.CharField(max_length=2, choices=TASK_STATUS)
     priority = models.CharField(max_length=2, choices=TASK_PRIORITY)
 
