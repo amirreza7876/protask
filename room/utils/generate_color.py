@@ -2,7 +2,5 @@ import random
 
 
 def generate_color():
-    random_number = random.randint(0, 16777215)
-    hex_number = str(hex(random_number))
-    hex_number = '#' + hex_number[2:]
-    return hex_number
+    rand = lambda: random.randint(100, 255)
+    return '#%02X%02X%02X' % (rand(), rand(), rand())
