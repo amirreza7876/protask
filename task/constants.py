@@ -11,6 +11,7 @@ TASK_STATUS = (
     ('s', 'Stuck'),
     ('t', 'Testing')
 )
+
 TASK_DIFFICULTY = (
     ('e', 'Easy'),
     ('el', "Elementary"),

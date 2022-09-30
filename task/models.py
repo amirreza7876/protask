@@ -11,7 +11,7 @@ class Task(models.Model):
     done = models.BooleanField(default=False)
     difficulty = models.CharField(max_length=2, choices=TASK_DIFFICULTY)
     duration = models.IntegerField(default=0)
-    status = models.CharField(max_length=2, choices=TASK_STATUS)
+    status = models.CharField(max_length=2, default='a', choices=TASK_STATUS)
     priority = models.CharField(max_length=2, choices=TASK_PRIORITY)
 
     def __str__(self):
