@@ -3,7 +3,6 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework import status
-
 from room.models import JoinRequest, Room, InviteRequest
 from room.serializers import RoomSerializer, JoinRequestSerializer, InviteRequestSerializer
 from room.utils.is_valid_email import is_valid
@@ -28,7 +27,6 @@ class UpdateName(UpdateAPIView):
 class RoomListApi(ListAPIView):
     serializer_class = RoomSerializer
     permission_classes = [IsAuthenticated]
-
     def get_queryset(self):
         return self.request.user.user_rooms.all()
 
