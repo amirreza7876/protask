@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from room.models import Room
-from room.permissions import IsOwner
+from room.permissions import IsOwner, IsMember, IsMemberFunctional, IsOwnerFunctional
 from task.models import Task, Phase
 from task.serializers import TaskSerializer, PhaseSerializer
 from user.models import CustomUser
@@ -62,26 +62,18 @@ def create_new_task(request):
 @permission_classes([IsOwner, ])
 def update_task(request):
     task_id = request.data.get('id')
-    value = request.data.get('value')
-    field = request.data.get('field')
+    task_data = request.data.get('data')
     task = get_object_or_404(Task, id=task_id)
-    if field == 'done':
-        if value:
-            task.done = value
-            task.status = 'd'
+
+    for key, value in task_data.items():
+        if key == 'user':
+            user = get_object_or_404(CustomUser, username=task_data['user'])
+            task.user = user
         else:
-            task.done = value
-            task.status = 'dg'
+            task.__setattr__(key, value)
 
-    if field == 'user':
-        user = get_object_or_404(CustomUser, username=value)
-        task.user = user
-        task.save()
-    else:
-        task.__setattr__(field, value)
-        task.save()
-
-    return Response({'msg': "updated"})
+    task.save()
+    return Response({'msg': "updated"}, status=status.HTTP_200_OK)
 
 
 class RoomPhaseViewSet(ModelViewSet):
@@ -98,3 +90,13 @@ class RoomPhaseViewSet(ModelViewSet):
         room_id = self.request.query_params['roomId']
         room = get_object_or_404(Room, request_string=request_string, id=room_id)
         return room.room_phases.all()
+
+
+@api_view(['DELETE'])
+@permission_classes([IsMemberFunctional, IsOwnerFunctional])
+def delete_task(request):
+    print('asdw')
+    task_id = request.data.get('id')
+    task_object = get_object_or_404(Task, id=task_id)
+    task_object.delete()
+    return Response({"msg": "deleted"}, status=status.HTTP_202_ACCEPTED)
