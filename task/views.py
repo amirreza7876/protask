@@ -30,11 +30,10 @@ class RoomTaskViewSet(ModelViewSet):
         serializer.save()
 
     def get_queryset(self):
-        request_string = self.request.query_params['requestString']
         room_id = self.request.query_params['roomId']
         phase_name = self.request.query_params['phaseName']
         phase_id = self.request.query_params['phaseId']
-        room = get_object_or_404(Room, request_string=request_string, id=room_id)
+        room = get_object_or_404(Room, id=room_id)
         return room.room_tasks.filter(phase_id=phase_id, phase__name=phase_name)
 
 
@@ -86,17 +85,24 @@ class RoomPhaseViewSet(ModelViewSet):
         serializer.save(board=board)
 
     def get_queryset(self):
-        request_string = self.request.query_params['requestString']
         room_id = self.request.query_params['roomId']
-        room = get_object_or_404(Room, request_string=request_string, id=room_id)
+        room = get_object_or_404(Room, id=room_id)
         return room.room_phases.all()
 
 
 @api_view(['DELETE'])
-@permission_classes([IsMemberFunctional, IsOwnerFunctional])
+@permission_classes([IsOwnerFunctional, IsMemberFunctional])
 def delete_task(request):
-    print('asdw')
-    task_id = request.data.get('id')
+    task_id = request.data.get('taskId')
     task_object = get_object_or_404(Task, id=task_id)
     task_object.delete()
+    return Response({"msg": "deleted"}, status=status.HTTP_202_ACCEPTED)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsMemberFunctional, IsOwnerFunctional])
+def delete_phase(request):
+    phase_id = request.data.get('phaseId')
+    phase_object = get_object_or_404(Phase, id=phase_id)
+    phase_object.delete()
     return Response({"msg": "deleted"}, status=status.HTTP_202_ACCEPTED)
