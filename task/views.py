@@ -1,3 +1,4 @@
+from django.core.mail import send_mail
 from django.forms import model_to_dict
 from rest_framework import status
 from rest_framework.decorators import action, api_view, permission_classes
@@ -6,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from protask import settings
 from room.models import Room
 from room.permissions import IsOwner, IsMember, IsMemberFunctional, IsOwnerFunctional
 from task.models import Task, Phase
@@ -53,6 +55,11 @@ def create_new_task(request):
     new = Task(owner=board, user=user, duration=duration, title=title, difficulty=difficulty,
                priority=priority, phase=phase)
     new.status = 'dg'
+    send_mail(f'New task at "{board.name}"',
+              f'Checkout board through link below:\n http://localhost:3000/room/{board_id}/tasks/',
+              settings.EMAIL_HOST_USER,
+              [user.email])
+
     new.save()
     return Response({'msg': 'created'}, status=status.HTTP_201_CREATED)
 
