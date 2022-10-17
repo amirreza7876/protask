@@ -51,7 +51,6 @@ def create_new_task(request):
     phase = get_object_or_404(Phase, board_id=board_id, id=phase_object['id'])
     user = get_object_or_404(CustomUser, username=user)
     board = get_object_or_404(Room, id=board_id)
-
     new = Task(owner=board, user=user, duration=duration, title=title, difficulty=difficulty,
                priority=priority, phase=phase)
     new.status = 'dg'
@@ -59,7 +58,6 @@ def create_new_task(request):
               f'Checkout board through link below:\n http://localhost:3000/room/{board_id}/tasks/',
               settings.EMAIL_HOST_USER,
               [user.email])
-
     new.save()
     return Response({'msg': 'created'}, status=status.HTTP_201_CREATED)
 
