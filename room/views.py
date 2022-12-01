@@ -27,6 +27,7 @@ class UpdateName(UpdateAPIView):
 class RoomListApi(ListAPIView):
     serializer_class = RoomSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         return self.request.user.user_rooms.all()
 
@@ -155,7 +156,6 @@ def user_invitation(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def room_request_list(request, uuid):
-    print('helloooo')
     room = get_object_or_404(Room, id=uuid)
     room_members = room.members.all()
     user = request.user

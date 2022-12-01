@@ -1,1 +1,4 @@
 protask/.env
+.idea/
+*.pyc
+db.sqlite

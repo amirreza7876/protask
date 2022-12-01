@@ -1,5 +1,4 @@
 from django.core.mail import send_mail
-from django.forms import model_to_dict
 from rest_framework import status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.generics import get_object_or_404

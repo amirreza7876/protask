@@ -7,15 +7,12 @@ class RoomSerializer(serializers.ModelSerializer):
     members = UserSerializer(many=True)
     leader = UserSerializer()
     is_owner = serializers.SerializerMethodField()
-    def __init__(self, *args, **kwargs):
-        # Don't pass the 'fields' arg up to the superclass
-        fields = kwargs.pop('fields', None)
 
-        # Instantiate the superclass normally
+    def __init__(self, *args, **kwargs):
+        fields = kwargs.pop('fields', None)
         super().__init__(*args, **kwargs)
 
         if fields is not None:
-            # Drop any fields that are not specified in the `fields` argument.
             allowed = set(fields)
             existing = set(self.fields)
             for field_name in existing - allowed:
@@ -30,7 +27,6 @@ class RoomSerializer(serializers.ModelSerializer):
             return obj.leader == self.context['request'].user
         except KeyError:
             return False
-
 
 
 class JoinRequestSerializer(serializers.ModelSerializer):

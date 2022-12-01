@@ -36,7 +36,9 @@ class RegisterApi(generics.GenericAPIView):
 @permission_classes([IsAuthenticated])
 def user_detail(request):
     if request.method == 'GET':
-        return Response({"username": request.user.username, 'email': request.user.email, 'bio': request.user.bio})
+        return Response({"username": request.user.username,
+                         'email': request.user.email,
+                         'bio': request.user.profile.bio})
 
     if request.method == 'POST':
         print(request.data)
