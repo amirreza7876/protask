@@ -6,4 +6,4 @@ class RoomConfig(AppConfig):
     name = 'room'
 
     def ready(self):
-        import room.signals
+        from . import signals

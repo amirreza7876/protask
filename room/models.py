@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.conf import settings
-from .enums import RequestTypes
+from .status import RequestTypes
 
 
 class Room(models.Model):

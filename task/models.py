@@ -1,5 +1,5 @@
 from django.db import models
-from task.enums import TaskDifficultyChoices, TaskStatusChoices, TaskPriorityChoices
+from task.status import TaskDifficultyChoices, TaskStatusChoices, TaskPriorityChoices
 from room.models import Room
 from django.conf import settings
 
